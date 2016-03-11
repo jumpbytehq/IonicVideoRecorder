@@ -37,6 +37,7 @@ angular.module('starter', ['ionic'])
 .controller('MainCtrl', ['$window', '$ionicPlatform', '$rootScope', '$scope', '$ionicScrollDelegate', '$ionicModal','$state',
   function($window, $ionicPlatform, $rootScope, $scope, $ionicScrollDelegate, AudioSvc, $ionicModal, $state) {
     $scope.files = [];
+    $scope.videodetails = [];
 
     $scope.func = function(){
         $rootScope.show('Accessing Videos.. Please wait');
@@ -50,9 +51,10 @@ angular.module('starter', ['ionic'])
                       $rootScope.hide();
                     }
                       var arr = [];
-                      processEntries(entries, arr); // arr is pass by refrence
-                      $scope.files = arr;
-                      $rootScope.hide();
+                      processEntries(entries, arr, function(arr) {
+                        $scope.files = $scope.dup;
+                        $rootScope.hide();
+                      }); // arr is pass by refrence
                   }, onError);
                 }, onError);
  
@@ -75,19 +77,75 @@ angular.module('starter', ['ionic'])
           var i, path, len;
           for (i = 0, len = mediaFiles.length; i < len; i += 1) {
               path = mediaFiles[i].fullPath;
-
-              var video = document.createElement('video');
-              video.preload = 'metadata';
-              video.onloadedmetadata = function() {
-                window.URL.revokeObjectURL(path)
-                var duration = video.duration;
-                console.log("Time :" , duration)
-              }
-              video.onloadedmetadata();
-              debugger;
-              // do something interesting with the file
               var name = prompt("Please Enter video name.. ");
-              window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
+              if(name === ""){
+                //========
+                  async.each(mediaFiles, function(file, callback) {
+
+                      var video = document.createElement('video');
+                      video.preload = 'metadata';
+                      video.src = mediaFiles[i].fullPath;;
+
+                      video.addEventListener("loadedmetadata", function(ev) {
+                        name = new Date().getTime();
+                        callback();
+                      });
+
+                    }, function(err){
+                        // if any of the file processing produced an error, err would equal that error
+                        if( err ) {
+                          // One of the iterations produced an error.
+                          // All processing will now stop.
+                          console.log('A file failed to process');
+                        } else {
+
+                        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
+                          fs.root.getDirectory(
+                              "ionicrecorder",
+                              {
+                                  create: true
+                              },
+                              function(dirEntry) {
+                                  dirEntry.getFile(
+                                      name + ".mp4", 
+                                      {
+                                          create: true, 
+                                          exclusive: false
+                                      }, 
+                                      function gotFileEntry(fe) {
+                                          var p = fe.toURL();
+                                          fe.remove();
+                                          ft = new FileTransfer();
+                                          ft.download(
+                                              encodeURI(path),
+                                              p,
+                                              function(entry) { 
+                                                  $scope.imgFile = entry.toURL();
+                                              },
+                                              function(error) {
+                                                  
+                                                  alert("Download Error Source -> " + error.source);
+                                              },
+                                              false,
+                                              null
+                                          );
+                                          $scope.func();
+                                      }, 
+                                      function() {
+                                          
+                                          console.log("Get file failed");
+                                      }
+                                  );
+                              }
+                              );
+                          });
+                          console.log('All files have been processed successfully');
+                        }
+                    });
+
+                //========
+              }else{
+                window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
                 fs.root.getDirectory(
                     "ionicrecorder",
                     {
@@ -126,7 +184,9 @@ angular.module('starter', ['ionic'])
                         );
                     }
                     );
-                });   
+                });
+
+              }   
           }
       };
 
@@ -176,24 +236,63 @@ angular.module('starter', ['ionic'])
         return (new RegExp('(' + exts.join('|').replace(/\./g, '\\.') + ')$')).test(fileName);
       }
  
-      function processEntries(entries, arr) {
- 
+      function processEntries(entries, arr, callback) {
+    
         for (var i = 0; i < entries.length; i++) {
           var e = entries[i];
- 
           // do not push/show hidden files or folders
           if (e.name.indexOf('.') !== 0) {
             arr.push({
-              id: i + 1,
+              id: i+1 ,
               name: e.name,
-              isUpNav: false,
-              isDirectory: e.isDirectory,
               nativeURL: e.nativeURL,
               fullPath: e.fullPath
             });
           }
         }
-        return arr;
+
+        $scope.dup = arr;
+        var durat = [];
+      
+        async.eachSeries(arr, function(file, callback) {
+          var video = document.createElement('video');
+          video.preload = 'metadata';
+          video.src = file.nativeURL;
+
+          video.addEventListener("loadedmetadata", function(ev) {
+            String.prototype.toHHMMSS = function () {
+                var sec_num = parseInt(this, 10); // don't forget the second param
+                var hours   = Math.floor(sec_num / 3600);
+                var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+                var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+                if (hours   < 10) {hours   = "0"+hours;}
+                if (minutes < 10) {minutes = "0"+minutes;}
+                if (seconds < 10) {seconds = "0"+seconds;}
+                var time    = hours+':'+minutes+':'+seconds;
+                return time;
+            }
+            var t = video.duration;
+            var nm = t.toString();
+            name = nm.toHHMMSS();
+            durat.push( name );
+            callback();
+          });
+
+        }, function(err){
+            if( err ) {
+              console.log('A file failed to process');
+            } else {
+              for(i=0; i<=durat.length -1 ;i++){
+                $scope.dup[i].duration = durat[i];
+              }
+              setTimeout(function(){
+                $scope.videodetails = $scope.dup;
+                callback($scope.videodetails);
+              },10,true);
+              console.log('All files have been processed successfully' );
+            }
+        });
       }
   }
 ])
