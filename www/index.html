@@ -38,12 +38,15 @@
 
       <div ng-controller="MainCtrl as main">
       <ion-content>
+        <ion-list show-delete="false" can-swipe="true">
             <ion-item class="item-icon-left item-icon-right" ng-repeat="file in files" type="item-text-wrap" ng-click="showFile(file)" >
                 <i class="icon ion-ios-videocam"></i>
                 <h2 ng-model="name">{{file.name}}</h2>
                 <p ng-model="mainduration">Duration : {{file.duration}}</p>
+                <ion-option-button class="button-positive" ng-click="shr(file)">Share</ion-option-button>
+                <ion-option-button class="button-assertive" ng-click="dlt(file)">Delete</ion-option-button>
             </ion-item>
-         
+         </ion-list>
       </ion-content>
 
       <ion-footer-bar>

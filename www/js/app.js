@@ -70,7 +70,36 @@ angular.module('starter', ['ionic'])
     
 
     $scope.func();
-    $scope.clicked= function(){
+
+    $scope.shr = function(file){
+      window.plugins.socialsharing.share(file.name, '', file.nativeURL);
+    }
+
+    $scope.dlt = function(file){
+      var conf = confirm("Are you sure you want to delete this video?");
+      if(conf){
+        var relativeFilePath = file.fullPath;
+        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
+            fileSystem.root.getFile(relativeFilePath, {create:false}, function(fileEntry){
+                fileEntry.remove(function(file){
+                    console.log("File removed!");
+                },function(){
+                    console.log("error deleting the file " + error.code);
+                    });
+                },function(){
+                    console.log("file does not exist");
+                });
+            },function(evt){
+                console.log(evt.target.error.code);
+        });
+        $scope.func();
+      }else{
+        return;
+      }
+      
+    }
+
+    $scope.clicked = function(){
         // capture callback
         var self =this;
       var captureSuccess = function(mediaFiles) {
@@ -78,6 +107,9 @@ angular.module('starter', ['ionic'])
           for (i = 0, len = mediaFiles.length; i < len; i += 1) {
               path = mediaFiles[i].fullPath;
               var name = prompt("Please Enter video name.. ");
+              if(name === null){
+                return;
+              }
               if(name === ""){
                 //========
                   async.each(mediaFiles, function(file, callback) {
