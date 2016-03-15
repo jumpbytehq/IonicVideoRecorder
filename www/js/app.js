@@ -110,73 +110,74 @@ angular.module('starter', ['ionic'])
               if(name === null){
                 return;
               }
-              if(name === ""){
+              
                 //========
-                  async.each(mediaFiles, function(file, callback) {
+              async.each(mediaFiles, function(file, callback) {
 
-                      var video = document.createElement('video');
-                      video.preload = 'metadata';
-                      video.src = mediaFiles[i].fullPath;;
+                  var video = document.createElement('video');
+                  video.preload = 'metadata';
+                  video.src = mediaFiles[i].fullPath;;
 
-                      video.addEventListener("loadedmetadata", function(ev) {
-                        name = new Date().getTime();
-                        callback();
-                      });
+                  video.addEventListener("loadedmetadata", function(ev) {
 
-                    }, function(err){
-                        // if any of the file processing produced an error, err would equal that error
-                        if( err ) {
-                          // One of the iterations produced an error.
-                          // All processing will now stop.
-                          console.log('A file failed to process');
-                        } else {
+                    if(name === ""){
+                      name = new Date().getTime();
+                    }
+                    callback();
+                  });
 
-                        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
-                          fs.root.getDirectory(
-                              "ionicrecorder",
-                              {
-                                  create: true
-                              },
-                              function(dirEntry) {
-                                  dirEntry.getFile(
-                                      name + ".mp4", 
-                                      {
-                                          create: true, 
-                                          exclusive: false
-                                      }, 
-                                      function gotFileEntry(fe) {
-                                          var p = fe.toURL();
-                                          fe.remove();
-                                          ft = new FileTransfer();
-                                          ft.download(
-                                              encodeURI(path),
-                                              p,
-                                              function(entry) { 
-                                                  $scope.imgFile = entry.toURL();
-                                              },
-                                              function(error) {
-                                                  
-                                                  alert("Download Error Source -> " + error.source);
-                                              },
-                                              false,
-                                              null
-                                          );
-                                          $scope.func();
-                                      }, 
-                                      function() {
-                                          
-                                          console.log("Get file failed");
-                                      }
-                                  );
-                              }
+                }, function(err){
+                    // if any of the file processing produced an error, err would equal that error
+                    if( err ) {
+                      // One of the iterations produced an error.
+                      // All processing will now stop.
+                      console.log('A file failed to process');
+                    } else {
+
+                    window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
+                      fs.root.getDirectory(
+                          "ionicrecorder",
+                          {
+                              create: true
+                          },
+                          function(dirEntry) {
+                              dirEntry.getFile(
+                                  name + ".mp4", 
+                                  {
+                                      create: true, 
+                                      exclusive: false
+                                  }, 
+                                  function gotFileEntry(fe) {
+                                      var p = fe.toURL();
+                                      fe.remove();
+                                      ft = new FileTransfer();
+                                      ft.download(
+                                          encodeURI(path),
+                                          p,
+                                          function(entry) { 
+                                              $scope.imgFile = entry.toURL();
+                                          },
+                                          function(error) {
+                                              
+                                              alert("Download Error Source -> " + error.source);
+                                          },
+                                          false,
+                                          null
+                                      );
+                                      $scope.func();
+                                  }, 
+                                  function() {
+                                      
+                                      console.log("Get file failed");
+                                  }
                               );
-                          });
-                          console.log('All files have been processed successfully');
-                        }
-                    });
-
-                //========
-              }else{
+                          }
+                          );
+                      });
+                      console.log('All files have been processed successfully');
+                    }
+                });
+            /*  }else{
                 window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
                 fs.root.getDirectory(
                     "ionicrecorder",
@@ -218,7 +219,7 @@ angular.module('starter', ['ionic'])
                     );
                 });
 
-              }   
+              } */  
           }
       };
 
