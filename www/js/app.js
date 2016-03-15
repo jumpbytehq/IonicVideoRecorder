@@ -110,8 +110,6 @@ angular.module('starter', ['ionic'])
               if(name === null){
                 return;
               }
-              
-                //========
               async.each(mediaFiles, function(file, callback) {
 
                   var video = document.createElement('video');
@@ -120,7 +118,7 @@ angular.module('starter', ['ionic'])
 
                   video.addEventListener("loadedmetadata", function(ev) {
 
-                    if(name === ""){
+                    if(name.trim() === ""){
                       name = new Date().getTime();
                     }
                     callback();
@@ -177,49 +175,6 @@ angular.module('starter', ['ionic'])
                       console.log('All files have been processed successfully');
                     }
                 });
-            /*  }else{
-                window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
-                fs.root.getDirectory(
-                    "ionicrecorder",
-                    {
-                        create: true
-                    },
-                    function(dirEntry) {
-                        dirEntry.getFile(
-                            name + ".mp4", 
-                            {
-                                create: true, 
-                                exclusive: false
-                            }, 
-                            function gotFileEntry(fe) {
-                                var p = fe.toURL();
-                                fe.remove();
-                                ft = new FileTransfer();
-                                ft.download(
-                                    encodeURI(path),
-                                    p,
-                                    function(entry) { 
-                                        $scope.imgFile = entry.toURL();
-                                    },
-                                    function(error) {
-                                        
-                                        alert("Download Error Source -> " + error.source);
-                                    },
-                                    false,
-                                    null
-                                );
-                                $scope.func();
-                            }, 
-                            function() {
-                                
-                                console.log("Get file failed");
-                            }
-                        );
-                    }
-                    );
-                });
-
-              } */  
           }
       };
 
