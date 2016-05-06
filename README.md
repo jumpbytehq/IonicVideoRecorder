@@ -1,5 +1,5 @@
 # IonicVideoRecorder
-Video Recorder App built with Ionic
+Video Recorder App built with Ionic ( Support only android for now , IOS version will update soon )
 
 # 1. Video List:
 <img src="https://github.com/jumpbytehq/IonicVideoRecorder/blob/master/Screens/Video_list.png" alt="Video_list" width="350px" height="600px">
